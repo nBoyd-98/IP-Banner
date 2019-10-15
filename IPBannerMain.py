@@ -1,28 +1,34 @@
 #!/usr/bin/python3
+
 from Admin import Admin
 from Server import Server
 from DatabaseHelper import DatabaseHelper
+import time
+import subprocess
 from tkinter import *
 
+
+
 def main():
-	myhelper = DatabaseHelper()
-	myhelper.add_entry("user1", "pass2")
-	myhelper.add_entry("user2", "pass2")
-	myhelper.list_users()
+	print("main")
+
 
 def StartWindow():
+
 	start_window = Tk()
 	start_window.title("IP Banner")
 	start_window.geometry("600x400")
 
 	def login_clicked():
 		login_btn.configure(text = "clicked")
+
 	login_btn = Button(start_window, text="Login", command = login_clicked)
 	login_btn.grid(column = 1, row = 0)
 
 	def new_clicked():
 		start_window.destroy()
 		CreateWindow()
+
 	new_btn = Button(start_window, text="New Admin", command = new_clicked)
 	new_btn.grid(column = 2, row = 0)
 	start_window.mainloop()
@@ -51,13 +57,35 @@ def CreateWindow():
 	def confirm_clicked():
 		name = e1.get()
 		psw = e2.get()
-		#We now need to save this info to a database
+		myhelper = DatabaseHelper()
+		hasname = myhelper.check_user(name)
+		if hasname:
+			fail_lbl = Label(login_window, text = "Sorry, username already exists")
+			fail_lbl.grid(row = 6, column = 1)
+		elif (16>len(name)<3):
+			fail_lbl = Label(login_window, text = "Invalid username length")
+			fail_lbl.grid(row = 6, column = 1)
+		elif (32>len(psw)<6):
+			fail_lbl = Label(login_window, text = "Invalid password length")
+			fail_lbl.grid(row = 6, column = 1)
 
+		else:
+			myhelper.add_entry(name, psw)
+			login_window.destroy()
+			CreationSuccessWindow()
 
 	confirm_btn = Button(login_window, text = "Confirm", command = confirm_clicked)
+	confirm_btn.grid(row = 5, column = 1)
 
 
 
-#StartWindow()
+def CreationSuccessWindow():
+	cs_window = Tk()
+	cs_window.geometry("600x400")
+	lbl = Label(cs_window, text= "New account created, redirecting to home...")
+	lbl.grid(row = 0, column = 0)
 
-#main()
+
+
+
+StartWindow()
