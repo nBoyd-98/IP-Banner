@@ -9,9 +9,27 @@ class DatabaseHelper():
 			(ID INTEGER PRIMARY KEY   AUTOINCREMENT, 
 			 USERNAME      TEXT   NOT NULL, 
 			 PASSWORD      TEXT   NOT NULL);''')
+	
+		self.db.execute('''CREATE TABLE IF NOT EXISTS SERVERS
+			(ID         INTEGER   NOT NULL,
+			HOST          TEXT    NOT NULL,
+			USER          TEXT    NOT NULL, 
+			PASSWORD      TEXT    NOT NULL, 
+			ALIAS         TEXT    NOT NULL);''')
+
+		self.db.execute('''CREATE TABLE IF NOT EXISTS WHITELIST
+			(ALIAS TEXT NOT NULL,
+			IP     TEXT NOT NULL);''')
+
+		self.db.execute('''CREATE TABLE IF NOT EXISTS BLACKLIST
+			(ALIAS TEXT NOT NULL,
+			IP     TEXT NOT NULL);''')
+
 		self.db.close()
 
-	def add_entry(self, username, password):
+	def add_user(self, Admin):
+		username = Admin.username
+		password = Admin.password
 		self.db = sqlite3.connect('users.db')
 		self.db.execute("INSERT INTO USERS (USERNAME, PASSWORD) VALUES(?, ?);", (username, password))
 		self.db.commit()
@@ -27,6 +45,13 @@ class DatabaseHelper():
 			return True
 		else:
 			return False
+
+	def get_id(self, username):
+		self.db = sqlite3.connect('users.db')
+		cursor = self.db.cursor()
+		cursor.execute('''SELECT ID FROM USERS WHERE USERNAME=?''', (username,))
+		num = cursor.fetchone()
+		return num[0]
 
 	def check_password(self, username, password):
 		self.db = sqlite3.connect('users.db')
@@ -56,6 +81,51 @@ class DatabaseHelper():
 			print("ID= " + str(row[0]))
 			print("USERNAME= " + str(row[1]))
 			print("PASSWORD= " + str(row[2]))
-			print()
-
+			print("test")
 		self.db.close()
+
+	def add_server(self, owner, Server):
+		self.db = sqlite3.connect('users.db')
+		num = self.get_id(owner)
+		self.db.execute("INSERT INTO SERVERS (ID, HOST, USER, PASSWORD, ALIAS) VALUES(?, ?, ?, ?, ?);" ,(num, Server.host, Server.username, Server.password, Server.alias))
+		self.db.commit()
+		self.db.close()
+
+	def get_users_servers(self, owner):
+		self.db = sqlite3.connect('users.db')
+		num = self.get_id(owner)
+		cursor = self.db.cursor()
+		cursor.execute('''SELECT HOST, USER, PASSWORD, ALIAS FROM SERVERS WHERE ID = ? ''' ,(num,))
+		servers = cursor.fetchall()
+		return servers
+
+	def add_blacklist(self, Server, tolist):
+		self.db = sqlite3.connect('users.db')
+		self.db.execute("INSERT INTO BLACKLIST (ALIAS, IP) VALUES(?, ?);" ,(Server.alias, tolist))
+		self.db.commit()
+		self.db.close()
+
+	def get_blacklist(self, Server):
+		self.db = sqlite3.connect('users.db')
+		alias = Server.alias
+		cursor = self.db.cursor()
+		cursor.execute('''SELECT IP FROM BLACKLIST WHERE ALIAS = ? ''' ,(alias,))
+		blacklist = cursor.fetchall()
+		return blacklist
+
+	def add_whitelist(self, Server, tolist):
+		self.db = sqlite3.connect('users.db')
+		self.db.execute("INSERT INTO WHITELIST (ALIAS, IP) VALUES(?, ?);" ,(Server.alias, tolist))
+		self.db.commit()
+		self.db.close()
+
+	def get_whitelist(self, Server):
+		self.db = sqlite3.connect('users.db')
+		alias = Server.alias
+		cursor = self.db.cursor()
+		cursor.execute('''SELECT IP FROM WHITELIST WHERE ALIAS = ? ''' ,(alias,))
+		whitelist = cursor.fetchall()
+		return whitelist
+
+
+

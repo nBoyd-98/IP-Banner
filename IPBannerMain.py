@@ -10,8 +10,8 @@ from tkinter import *
 
 
 def main():
-	print("main")
 
+	#Use this to test functionality independent of gui 
 
 def StartWindow():
 
@@ -88,4 +88,5 @@ def CreationSuccessWindow():
 
 
 
-StartWindow()
+#StartWindow()
+main()
