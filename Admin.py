@@ -8,9 +8,11 @@ class Admin:
 		self.password = password
 		self.servercount = 0
 		self.serverdict = {}
+		self.serverlist = []
 
 	def add_server(self, new_server):
 		self.serverdict[new_server.alias] = new_server
+		self.serverlist.append(new_server)
 		self.servercount += 1
 
 	def get_server(self, alias):

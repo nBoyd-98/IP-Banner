@@ -59,7 +59,9 @@ class DatabaseHelper():
 		cursor.execute('''SELECT PASSWORD FROM USERS WHERE USERNAME=?''', (username,))
 		psw = cursor.fetchone()
 		self.db.close()
-		if (password == psw[0]):
+		if not psw:
+			return False
+		elif (password == psw[0]):
 			return True
 		else:
 			return False
@@ -98,6 +100,13 @@ class DatabaseHelper():
 		cursor.execute('''SELECT HOST, USER, PASSWORD, ALIAS FROM SERVERS WHERE ID = ? ''' ,(num,))
 		servers = cursor.fetchall()
 		return servers
+
+	def get_server(self, alias):
+		self.db = sqlite3.connect('users.db')
+		cursor = self.db.cursor()
+		cursor.execute('''SELECT HOST, USER, PASSWORD, ALIAS FROM SERVERS WHERE ALIAS = ? ''' , (alias,))
+		server = cursor.fetchone()
+		return server
 
 	def add_blacklist(self, Server, tolist):
 		self.db = sqlite3.connect('users.db')

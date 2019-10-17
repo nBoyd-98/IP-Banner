@@ -10,14 +10,15 @@ class Server():
 		self.alias = alias
 		self.s = pxssh.pxssh()
 
-	def server_login(self):
-		if not (self.s.login(self.host, self.username, self.password)):
-			print("fail on login")
-			print(str(s))
-		else:
-			print("worked")
+	def test_login(self):
+		try:
+			(self.s.login(self.host, self.username, self.password))
+			self.s.logout()
+			return True
+		except:
+			return False
 
-	def talk(self, command):
+	def send_line(self, command):
 		self.s.sendline(command)
 		self.s.prompt()
 		print(self.s.before)
