@@ -3,6 +3,7 @@
 from Admin import Admin
 from Server import Server
 from DatabaseHelper import DatabaseHelper
+import LogParse
 import time
 import subprocess
 from tkinter import *
@@ -10,7 +11,12 @@ from tkinter import *
 
 
 def main():
-
+	print("Hello")
+	# logread() runs a while True: loop and expects to be the last thing running
+	# Currently authlog path is hard coded but this will change to be a config
+	# Variable as more OS's become supported
+	LogParse.logread('/var/log/auth.log') 
+	
 	#Use this to test functionality independent of gui 
 
 def StartWindow():
