@@ -1,0 +1,7 @@
+# Gitignore
+
+# Ignored Files:
+users.db
+
+# Ignored Directories
+__pycache__/
