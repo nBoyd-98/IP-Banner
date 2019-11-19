@@ -20,8 +20,8 @@ class Server():
 
 	def send_line(self, command):
 		self.s.sendline(command)
-		self.s.prompt()
-		print(self.s.before)
+		line = self.s.prompt()
+		return line
 
 
 

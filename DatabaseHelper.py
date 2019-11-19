@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import sqlite3
+import re
 
 class DatabaseHelper():
 
@@ -113,6 +114,7 @@ class DatabaseHelper():
 		self.db.execute("INSERT INTO BLACKLIST (ALIAS, IP) VALUES(?, ?);" ,(Server.alias, tolist))
 		self.db.commit()
 		self.db.close()
+		return True
 
 	def get_blacklist(self, Server):
 		self.db = sqlite3.connect('users.db')
@@ -123,10 +125,21 @@ class DatabaseHelper():
 		return blacklist
 
 	def add_whitelist(self, Server, tolist):
+		ip_pat = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+		test = ip_pat.match(tolist)
+		if not test:
+			return False
+		else:
+			blist = self.get_blacklist(self, Server)
+			for black_ip in blist:
+				for ip in black_ip:
+					if ip == tolist:
+						return False
 		self.db = sqlite3.connect('users.db')
 		self.db.execute("INSERT INTO WHITELIST (ALIAS, IP) VALUES(?, ?);" ,(Server.alias, tolist))
 		self.db.commit()
 		self.db.close()
+		return True
 
 	def get_whitelist(self, Server):
 		self.db = sqlite3.connect('users.db')

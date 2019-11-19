@@ -17,8 +17,7 @@ import fileinput
 def ban_ip(ipaddr):
 	# That should be big enough for no duplicates, otherwise we need incremental rule numbers *lame*
 	rule_num = random.randint(20, 10001)
-	
-       	with open("IPFW.sh", "a") as rulefile:
+	with open("IPFW.sh", "a") as rulefile:
 		rulefile.write("ipfw -q add " + rule_num + " deny tcp from " + ipaddr + " to me via $eth_if keep-state")
 
 	subprocess.call(['sh IPFW.sh'])

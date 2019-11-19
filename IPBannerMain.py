@@ -4,8 +4,10 @@ from Admin import Admin
 from Server import Server
 from DatabaseHelper import DatabaseHelper
 import LogParse
+import FirewallBan
 import time
 import subprocess
+from functools import partial
 from tkinter import *
 
 
@@ -68,6 +70,11 @@ def LoginWindow():
 			fl = Label(login_window, text = "Sorry, incorrect username or password").grid(row=6, column=0)
 		else:
 			admin = Admin(name, psw)
+			myhelper = DatabaseHelper()
+			slist = myhelper.get_users_servers(admin.username)
+			for server in slist:
+				new_server = Server(server[0], server[1], server[2], server[3])
+				admin.add_server(new_server)
 			login_window.destroy()
 			MainWindow(admin)
 
@@ -209,29 +216,25 @@ def WarningWindow(newadmin, newserver, sw):
 	nb = Button(ww, text="No", command = no)
 	nb.grid(row=1, column=1)
 
-def ViewServersWindow(newadmin):
-	def clicked(sname):
-		myhelper = DatabaseHelper()
-		s = myhelper.get_server(sname)
-		ServerViewer(s)
+
+def ViewServersWindow(admin):
+	def clicked(server):
+		ServerViewer(server)
 
 	vs = Tk()
 	vs.geometry("600x400")
-	myhelper = DatabaseHelper()
-	s = myhelper.get_users_servers(newadmin.username)
 	i = 0
-	for server in s:
-		sname = server[3]
-		btn = Button(vs, text = sname, command = lambda: clicked(sname))
+	for server in admin.serverdict.values():
+		btn = Button(vs, text = server.alias, command = partial(clicked, server))
 		btn.grid(row=i, column=0)
 		i+=1
 
-def ServerViewer(slist):
+def ServerViewer(server):
 	sv = Tk()
 	sv.geometry('600x400')
-	hl = Label(sv, text = "Host: " + slist[0]).grid(row=0, column=0)
-	hn = Label(sv, text = "Username: " + slist[1]).grid(row=1, column=0)
-	ha = Label(sv, text = "Nickname: " + slist[3]).grid(row=2, column=0)
+	hl = Label(sv, text = "Host: " + server.host).grid(row=0, column=0)
+	hn = Label(sv, text = "Username: " + server.username).grid(row=1, column=0)
+	ha = Label(sv, text = "Nickname: " + server.alias).grid(row=2, column=0)
 
 
 
@@ -240,4 +243,4 @@ def ServerViewer(slist):
 
 
 StartWindow()
-main()
+#main()
