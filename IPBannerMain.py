@@ -17,7 +17,7 @@ def main():
 	# logread() runs a while True: loop and expects to be the last thing running
 	# Currently authlog path is hard coded but this will change to be a config
 	# Variable as more OS's become supported
-	LogParse.logread('/var/log/auth.log') 
+	#LogParse.logread('/var/log/auth.log') 
 	
 	#Use this to test functionality independent of gui 
 
@@ -74,7 +74,9 @@ def LoginWindow():
 			slist = myhelper.get_users_servers(admin.username)
 			for server in slist:
 				new_server = Server(server[0], server[1], server[2], server[3])
-				admin.add_server(new_server)
+				new_server.load_info()
+				print("loading info.. whitelist: " + str(new_server.whitelist))
+				admin.load_server(new_server)
 			login_window.destroy()
 			MainWindow(admin)
 
@@ -187,8 +189,6 @@ def NewServerWindow(newadmin):
 			WarningWindow(newadmin, newserver, sw)
 		else:
 			newadmin.add_server(newserver)
-			myhelper = DatabaseHelper()
-			myhelper.add_server(newadmin.username, newserver)
 			sw.destroy()
 
 	btn = Button(sw, text="Confirm", command = confirm_clicked).grid(row=6, column=0)
@@ -218,23 +218,155 @@ def WarningWindow(newadmin, newserver, sw):
 
 
 def ViewServersWindow(admin):
-	def clicked(server):
-		ServerViewer(server)
+
+	def clicked(server, admin):
+		ServerViewer(server, admin)
 
 	vs = Tk()
 	vs.geometry("600x400")
 	i = 0
 	for server in admin.serverdict.values():
-		btn = Button(vs, text = server.alias, command = partial(clicked, server))
+		btn = Button(vs, text = server.alias, command = partial(clicked, server, admin))
 		btn.grid(row=i, column=0)
 		i+=1
 
-def ServerViewer(server):
+def ServerViewer(server, admin):
+	def wlclicked(server, admin):
+		WhitelistEditWindow(server, admin)
+	def blclicked(server, admin):
+		BlacklistEditWindow(server, admin)
+	def rmclicked(server, admin):
+		RemoveWindow(server,admin)
 	sv = Tk()
 	sv.geometry('600x400')
 	hl = Label(sv, text = "Host: " + server.host).grid(row=0, column=0)
 	hn = Label(sv, text = "Username: " + server.username).grid(row=1, column=0)
 	ha = Label(sv, text = "Nickname: " + server.alias).grid(row=2, column=0)
+	wlbtn = Button(sv, text = "Edit Whitelist", command = partial(wlclicked, server, admin))
+	wlbtn.grid(row=3, column=0)
+	blbtn = Button(sv, text = "Edit Blacklist", command = partial(blclicked, server, admin))
+	blbtn.grid(row=3, column=1)
+	rmbtn = Button(sv, text = "Remove Server", command = partial(rmclicked, server, admin))
+	rmbtn.grid(row=3, column=2)
+
+def WhitelistEditWindow(server, admin):
+	def addclicked(server):
+		AddWhitelistWindow(server)
+
+	def rmclicked(server, ip):
+		RemoveWhitelistWindow(server, ip)
+
+	wle = Tk()
+	wle.geometry('600x400')
+
+	addbtn = Button(wle, text="Add", command = partial(addclicked, server)).grid(row=0, column=0)
+	i = 1
+	wl = server.get_whitelist()
+	for ip in wl:
+		iplabel = Label(wle, text = 'IP: ' + str(ip)).grid(row=i, column=0)
+		rmbtn = Button(wle, text = "Remove", command = partial(rmclicked, server, ip)).grid(row=i, column=1)
+		i += 1
+
+def RemoveWhitelistWindow(server, ip):
+	def yesclicked(server, ip):
+		server.remove_whitelist(ip)
+		rmwl.destroy()
+
+	def noclicked():
+		rmwl.destroy()
+	rmwl = Tk()
+	rmwl.geometry('600x400')
+	lbl = Label(rmwl, text = "Are you sure you want to remove " + str(ip) + "?").grid(row=0, column=0)
+	yesbtn = Button(rmwl, text = "Yes", command = partial(yesclicked, server, ip)).grid(row=1, column=0)
+	nobtn = Button(rmwl, text = "No", command = noclicked)
+
+def AddWhitelistWindow(server):
+	def addclicked(server):
+		ip = ipentry.get()
+		try:
+			server.add_whitelist(ip)
+			addwl.destroy()
+		except:
+			lbl = Label(addwl, text = "IP already in whitelist").grid(row=2, column=0)
+	addwl = Tk()
+	addwl.geometry('600x400')
+	addlbl = Label(addwl, text="IP address to add to whitelist: ").grid(row=0, column=0)
+	ipentry = Entry(addwl)
+	ipentry.grid(row=0, column=1)
+	addbtn = Button(addwl, text = "Add", command = partial(addclicked, server)).grid(row=1, column=0)
+
+
+##########################################################################################
+
+
+def BlacklistEditWindow(server, admin):
+	def addclicked(server):
+		AddBlacklistWindow(server)
+
+	def rmclicked(server, ip):
+		RemoveBlacklistWindow(server, ip)
+
+	ble = Tk()
+	ble.geometry('600x400')
+
+	addbtn = Button(ble, text="Add", command = partial(addclicked, server)).grid(row=0, column=0)
+	i = 1
+	bl = server.get_blacklist()
+	for ip in bl:
+		iplabel = Label(ble, text = 'IP: ' + str(ip)).grid(row=i, column=0)
+		rmbtn = Button(ble, text = "Remove", command = partial(rmclicked, server, ip)).grid(row=i, column=1)
+		i += 1
+
+def RemoveBlacklistWindow(server, ip):
+	def yesclicked(server, ip):
+		server.remove_blacklist(ip)
+		rmbl.destroy()
+
+	def noclicked():
+		rmbl.destroy()
+
+	rmbl = Tk()
+	rmbl.geometry('600x400')
+	lbl = Label(rmbl, text = "Are you sure you want to remove " + str(ip) + "?").grid(row=0, column=0)
+	yesbtn = Button(rmbl, text = "Yes", command = partial(yesclicked, server, ip)).grid(row=1, column=0)
+	nobtn = Button(rmbl, text = "No", command = noclicked)
+
+def AddBlacklistWindow(server):
+	def addclicked(server):
+		ip = ipentry.get()
+		try:
+			server.add_blacklist(ip)
+			addbl.destroy()
+		except:
+			lbl = Label(addbl, text = "IP already in blacklist").grid(row=2, column=0)
+	addbl = Tk()
+	addbl.geometry('600x400')
+	addlbl = Label(addbl, text="IP address to add to blacklist: ").grid(row=0, column=0)
+	ipentry = Entry(addbl)
+	ipentry.grid(row=0, column=1)
+	addbtn = Button(addbl, text = "Add", command = partial(addclicked, server)).grid(row=1, column=0)
+
+
+
+
+
+##Remove Server
+def RemoveWindow(server, admin):
+	def yesclicked(server, admin):
+		admin.remove_server(server)
+		rw.destroy()
+
+	def noclicked():
+		rw.destroy()
+
+	rw = Tk()
+	rw.geometry('600x400')
+	rl = Label(rw, text = "Are you sure you want to remove this server?").grid(row=0, column=0)
+	yesbtn = Button(rw, text = "Yes", command = lambda: yesclicked(server, admin))
+	yesbtn.grid(row=1, column=0)
+	nobtn = Button(rw, text = "No", command = noclicked())
+	nobtn.grid(row=1, column=1)
+
 
 
 
