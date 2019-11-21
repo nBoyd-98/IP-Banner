@@ -136,7 +136,7 @@ class DatabaseHelper():
 		self.db.execute("INSERT INTO BLACKLIST (ALIAS, IP) VALUES(?, ?);" ,(Server.alias, tolist))
 		self.db.commit()
 		self.db.close()
-        ban_ip(tolist)
+		ban_ip(tolist)
 		return True
 
 	def remove_blacklist(self, Server, toremove):
