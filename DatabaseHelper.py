@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 import sqlite3
 
+from FirewallBan import *
+
 class DatabaseHelper():
 
 	def __init__(self):
@@ -113,6 +115,7 @@ class DatabaseHelper():
 		self.db.execute("INSERT INTO BLACKLIST (ALIAS, IP) VALUES(?, ?);" ,(Server.alias, tolist))
 		self.db.commit()
 		self.db.close()
+		ban_ip(tolist)
 
 	def get_blacklist(self, Server):
 		self.db = sqlite3.connect('users.db')
