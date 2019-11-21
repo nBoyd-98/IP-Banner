@@ -28,6 +28,11 @@ class DatabaseHelper():
 			(ALIAS TEXT NOT NULL,
 			IP     TEXT NOT NULL UNIQUE);''')
 
+		self.db.execute('''CREATE TABLE IF NOT EXISTS FIREWALL
+			(ALIAS TEXT NOT NULL,
+			FAILS  INTEGER NOT NULL,
+			BAN_MINUTES INTEGER NOT NULL)''')
+
 	def add_user(self, Admin):
 		username = Admin.username
 		password = Admin.password
@@ -192,6 +197,39 @@ class DatabaseHelper():
 		whitelist = cursor.fetchall()
 		print("in database " + str(whitelist))
 		return whitelist
+
+	def add_firewall(self, Server, fails, time):
+		self.db = sqlite3.connect('users.db')
+		alias = Server.alias
+		self.db.execute("INSERT INTO FIREWALL (ALIAS, FAILS, BAN_MINUTES) VALUES(?, ?, ?);", (alias, fails, time))
+		self.db.commit()
+		self.db.close()
+		return True
+
+	def change_firewall_fails(self, Server, fails):
+		self.db = sqlite3.connect('users.db')
+		alias = Server.alias
+		self.db.execute('''UPDATE FIREWALL SET FAILS = ? WHERE ALIAS = ?''', (fails, alias))
+		self.db.commit()
+		self.db.close()
+		return True
+
+	def change_firewall_time(self, Server, bantime):
+		self.db = sqlite3.connect('users.db')
+		alias = Server.alias
+		self.db.execute('''UPDATE FIREWALL SET BAN_MINUTES = ? WHERE ALIAS = ?''', (bantime, alias))
+		self.db.commit()
+		self.db.close()
+		return True
+
+	def get_firewall(self, Server):
+		self.db = sqlite3.connect('users.db')
+		alias = Server.alias
+		cursor = self.db.cursor()
+		cursor.execute('''SELECT FAILS, BAN_MINUTES FROM FIREWALL WHERE ALIAS = ?''', (alias,))
+		firewall = cursor.fetchall()
+		return firewall
+		
 
 
 

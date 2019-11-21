@@ -23,8 +23,8 @@ def ban_ip(ipaddr):
 
 	subprocess.call(['./IPFW.sh'])
 	# Timer uses Magic Number 20 for the ban time, this should be a vairable soon.
-	timer = threading.Timer(20.0, unban_ip, [rule_num])
-	timer.start()
+	#timer = threading.Timer(20.0, unban_ip, [rule_num])
+	#timer.start()
 
 def unban_ip(rule_num):
 	with fileinput.FileInput(IPFW.sh, inplace = True) as rulefile:

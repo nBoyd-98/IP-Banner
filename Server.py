@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from pexpect import pxssh
+from Firewall import *
 from DatabaseHelper import *
 
 class Server():
@@ -12,7 +13,7 @@ class Server():
 		self.s = pxssh.pxssh()
 		self.whitelist = []
 		self.blacklist = []
-		self.firewall = []
+		self.firewall = Firewall()
 
 	def test_login(self):
 		try:
@@ -21,6 +22,12 @@ class Server():
 			return True
 		except:
 			return False
+
+	def get_firewall_fails(self):
+		return self.firewall.fails
+
+	def get_firewall_time(self):
+		return self.firewall.ban_minutes
 
 	def load_info(self):
 		myhelper = DatabaseHelper()
@@ -32,6 +39,16 @@ class Server():
 		for tup in bl:
 			for ip in tup:
 				self.blacklist.append(ip)
+		fw = myhelper.get_firewall(self)
+		for tup in fw:
+			try:
+				self.firewall = Firewall(tup[0], tup[1])
+			except:
+				print("default firewall")
+
+
+	def get_firewall(self):
+		return self.firewall
 
 
 	def get_whitelist(self):

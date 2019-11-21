@@ -21,12 +21,17 @@ def main():
 	
 	#Use this to test functionality independent of gui 
 
+	myserver = Server("host", "user", "pass", "nick")
+	f= myserver.get_firewall_fails()
+	print(f)
+
 
 def StartWindow():
 
 	start_window = Tk()
 	start_window.title("IP Banner")
 	start_window.geometry("600x400")
+	start_window.resizable(0, 0)
 
 	def login_clicked():
 		start_window.destroy()
@@ -47,6 +52,7 @@ def LoginWindow():
 	login_window = Tk()
 	login_window.title("Account Login")
 	login_window.geometry("600x400")
+	login_window.resizable(0, 0)
 
 	lbl = Label(login_window, text = "Please provide username and password")
 	lbl.grid(row = 0, column = 0)
@@ -90,6 +96,7 @@ def CreateWindow():
 	login_window = Tk()
 	login_window.title("New Admin Creation")
 	login_window.geometry("600x400")
+	login_window.resizable(0, 0)
 
 	lbl = Label(login_window, text = "Please create new username and password")
 	lbl.grid(row = 0, column = 0)
@@ -131,11 +138,12 @@ def CreateWindow():
 	confirm_btn = Button(login_window, text = "Confirm", command = confirm_clicked)
 	confirm_btn.grid(row = 5, column = 1)
 
-
+######## START OF MAIN PROGRAM ###############################
 def MainWindow(newadmin):
 	mw = Tk()
 	mw.geometry("600x400")
-	lbl = Label(mw, text= "Logged in as: " + newadmin.username)
+	mw.title("Main Window")
+	lbl = Label(mw, text= "Logged in as: " + newadmin.username, font=(35))
 	lbl.grid(row = 0, column = 0)
 
 	def server_clicked():
@@ -143,12 +151,15 @@ def MainWindow(newadmin):
 
 	def vs_clicked():
 		ViewServersWindow(newadmin)
+		mw.destroy()
 
 	s_btn = Button(mw, text="New Server", command = server_clicked)
-	s_btn.grid(row=2, column=0)
+	s_btn.grid(row=2, column=0, pady = 10)
+	s_btn.config(height=1, width=15)
 
 	vs_btn = Button(mw, text="View Servers", command = vs_clicked)
 	vs_btn.grid(row=3, column=0)
+	vs_btn.config(height=1, width=15)
 
 def NewServerWindow(newadmin):
 	sw = Tk()
@@ -221,51 +232,100 @@ def ViewServersWindow(admin):
 
 	def clicked(server, admin):
 		ServerViewer(server, admin)
+		vs.destroy()
+
+	def backclicked(admin):
+		MainWindow(admin)
+		vs.destroy()
 
 	vs = Tk()
+	vs.resizable(0, 0)
 	vs.geometry("600x400")
+	vs.title("Server Viewer")
 	i = 0
 	for server in admin.serverdict.values():
-		btn = Button(vs, text = server.alias, command = partial(clicked, server, admin))
+		btn = Button(vs, text = server.alias, command = partial(clicked, server, admin), height=1, width=15)
 		btn.grid(row=i, column=0)
 		i+=1
+
+	backbtn = Button(vs, text = "Back", command = partial(backclicked, admin)).grid(row = i+1, column=1, padx = 350, pady = 50)
 
 def ServerViewer(server, admin):
 	def wlclicked(server, admin):
 		WhitelistEditWindow(server, admin)
+		sv.destroy()
 	def blclicked(server, admin):
 		BlacklistEditWindow(server, admin)
+		sv.destroy()
+	def fwclicked(server, admin):
+		FirewallEditWindow(server, admin)
+		sv.destroy()
 	def rmclicked(server, admin):
 		RemoveWindow(server,admin)
+		sv.destroy()
+	def backclicked(admin):
+		ViewServersWindow(admin)
+		sv.destroy()
 	sv = Tk()
+	sv.title("Server Information")
 	sv.geometry('600x400')
+	sv.resizable(0, 0)
 	hl = Label(sv, text = "Host: " + server.host).grid(row=0, column=0)
 	hn = Label(sv, text = "Username: " + server.username).grid(row=1, column=0)
 	ha = Label(sv, text = "Nickname: " + server.alias).grid(row=2, column=0)
-	wlbtn = Button(sv, text = "Edit Whitelist", command = partial(wlclicked, server, admin))
+	wlbtn = Button(sv, text = "Edit Whitelist", command = partial(wlclicked, server, admin), height = 1, width = 15)
 	wlbtn.grid(row=3, column=0)
-	blbtn = Button(sv, text = "Edit Blacklist", command = partial(blclicked, server, admin))
+	blbtn = Button(sv, text = "Edit Blacklist", command = partial(blclicked, server, admin), height = 1, width = 15)
 	blbtn.grid(row=3, column=1)
-	rmbtn = Button(sv, text = "Remove Server", command = partial(rmclicked, server, admin))
-	rmbtn.grid(row=3, column=2)
+	fwbtn = Button(sv, text = "Edit Firewall", command = partial(fwclicked, server, admin), height = 1, width = 15)
+	fwbtn.grid(row=3, column=2)
+	rmbtn = Button(sv, text = "Remove Server", command = partial(rmclicked, server, admin), height = 1, width = 15)
+	rmbtn.grid(row=3, column=4)
+	backbtn = Button(sv, text = "Back", command = partial(backclicked, admin))
+	backbtn.grid(row=4, column=4, padx=20, pady=20)
+
+def FirewallEditWindow(server, admin):
+	def failclicked(server, admin):
+		print('hi')
+	def timeclicked(server, admin):
+		print('hi')
+	fwe = Tk()
+	fwe.geometry('600x400')
+	fwe.title("Firewall Editor")
+	fwe.resizable(0, 0)
+	faillbl = Label(fwe, text = "Fails allowed / min: " + str(server.get_firewall_fails())).grid(row=0, column=0)
+	failbtn = Button(fwe, text = "Edit", command = partial(failclicked, server, admin)).grid(row=0, column=1)
+	timelbl = Label(fwe, text = "Ban time (min): " + str(server.get_firewall_time())).grid(row=1, column=0)
+	timebtn = Button(fwe, text = "Edit", command = partial(timeclicked, server, admin)).grid(row=1, column=1)
 
 def WhitelistEditWindow(server, admin):
-	def addclicked(server):
-		AddWhitelistWindow(server)
+	def addclicked(server, admin):
+		AddWhitelistWindow(server, admin)
+		wle.destroy()
 
 	def rmclicked(server, ip):
 		RemoveWhitelistWindow(server, ip)
+		wle.destroy()
+
+	def backclicked(server, admin):
+		ServerViewer(server, admin)
+		wle.destroy()
 
 	wle = Tk()
 	wle.geometry('600x400')
+	wle.title("Whitelist Editor")
+	wle.resizable(0, 0)
 
-	addbtn = Button(wle, text="Add", command = partial(addclicked, server)).grid(row=0, column=0)
+	addbtn = Button(wle, text="Add", command = partial(addclicked, server, admin)).grid(row=0, column=0)
 	i = 1
 	wl = server.get_whitelist()
 	for ip in wl:
 		iplabel = Label(wle, text = 'IP: ' + str(ip)).grid(row=i, column=0)
 		rmbtn = Button(wle, text = "Remove", command = partial(rmclicked, server, ip)).grid(row=i, column=1)
 		i += 1
+
+	backbtn = Button(wle, text = "Back", command = partial(backclicked, server, admin))
+	backbtn.grid(row = i+1, column=2, padx=15, pady=15)
 
 def RemoveWhitelistWindow(server, ip):
 	def yesclicked(server, ip):
@@ -280,12 +340,13 @@ def RemoveWhitelistWindow(server, ip):
 	yesbtn = Button(rmwl, text = "Yes", command = partial(yesclicked, server, ip)).grid(row=1, column=0)
 	nobtn = Button(rmwl, text = "No", command = noclicked)
 
-def AddWhitelistWindow(server):
-	def addclicked(server):
+def AddWhitelistWindow(server, admin):
+	def addclicked(server, admin):
 		ip = ipentry.get()
 		try:
 			server.add_whitelist(ip)
 			addwl.destroy()
+			WhitelistEditWindow(server, admin)
 		except:
 			lbl = Label(addwl, text = "IP already in whitelist").grid(row=2, column=0)
 	addwl = Tk()
@@ -293,29 +354,40 @@ def AddWhitelistWindow(server):
 	addlbl = Label(addwl, text="IP address to add to whitelist: ").grid(row=0, column=0)
 	ipentry = Entry(addwl)
 	ipentry.grid(row=0, column=1)
-	addbtn = Button(addwl, text = "Add", command = partial(addclicked, server)).grid(row=1, column=0)
+	addbtn = Button(addwl, text = "Add", command = partial(addclicked, server, admin)).grid(row=1, column=0)
 
 
 ##########################################################################################
 
 
 def BlacklistEditWindow(server, admin):
-	def addclicked(server):
-		AddBlacklistWindow(server)
+	def addclicked(server, admin):
+		AddBlacklistWindow(server, admin)
+		ble.destroy()
 
 	def rmclicked(server, ip):
 		RemoveBlacklistWindow(server, ip)
+		ble.destroy()
+
+	def backclicked(server, admin):
+		ServerViewer(server, admin)
+		ble.destroy()
 
 	ble = Tk()
 	ble.geometry('600x400')
+	ble.title("Blacklist Editor")
+	ble.resizable(0, 0)
 
-	addbtn = Button(ble, text="Add", command = partial(addclicked, server)).grid(row=0, column=0)
+	addbtn = Button(ble, text="Add", command = partial(addclicked, server, admin)).grid(row=0, column=0)
 	i = 1
 	bl = server.get_blacklist()
 	for ip in bl:
 		iplabel = Label(ble, text = 'IP: ' + str(ip)).grid(row=i, column=0)
 		rmbtn = Button(ble, text = "Remove", command = partial(rmclicked, server, ip)).grid(row=i, column=1)
 		i += 1
+
+	backbtn = Button(ble, text = "Back", command = partial(backclicked, server, admin))
+	backbtn.grid(row = i+1, column=2, padx=15, pady=15)
 
 def RemoveBlacklistWindow(server, ip):
 	def yesclicked(server, ip):
@@ -331,12 +403,13 @@ def RemoveBlacklistWindow(server, ip):
 	yesbtn = Button(rmbl, text = "Yes", command = partial(yesclicked, server, ip)).grid(row=1, column=0)
 	nobtn = Button(rmbl, text = "No", command = noclicked)
 
-def AddBlacklistWindow(server):
-	def addclicked(server):
+def AddBlacklistWindow(server, admin):
+	def addclicked(server, admin):
 		ip = ipentry.get()
 		try:
 			server.add_blacklist(ip)
 			addbl.destroy()
+			BlacklistEditWindow(server, admin)
 		except:
 			lbl = Label(addbl, text = "IP already in blacklist").grid(row=2, column=0)
 	addbl = Tk()
@@ -344,7 +417,7 @@ def AddBlacklistWindow(server):
 	addlbl = Label(addbl, text="IP address to add to blacklist: ").grid(row=0, column=0)
 	ipentry = Entry(addbl)
 	ipentry.grid(row=0, column=1)
-	addbtn = Button(addbl, text = "Add", command = partial(addclicked, server)).grid(row=1, column=0)
+	addbtn = Button(addbl, text = "Add", command = partial(addclicked, server, admin)).grid(row=1, column=0)
 
 
 
@@ -361,6 +434,8 @@ def RemoveWindow(server, admin):
 
 	rw = Tk()
 	rw.geometry('600x400')
+	rw.title("Remove Server")
+	rw.resizable(0, 0)
 	rl = Label(rw, text = "Are you sure you want to remove this server?").grid(row=0, column=0)
 	yesbtn = Button(rw, text = "Yes", command = lambda: yesclicked(server, admin))
 	yesbtn.grid(row=1, column=0)
