@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import re
+import FirewallBan
 
 
 # This implementation of logread has almost the same behavior as
@@ -21,5 +22,6 @@ def pull_ip(line):
 	print(line)
 	ipaddr = re.search("((?:[0-9]{1,3}\.){3}[0-9]{1,3})", line).group(1)
 	print(ipaddr)
+        FirewallBan.ban_ip(ipaddr)
 
 
