@@ -25,7 +25,6 @@ def logread(logfilepath):
 				
 def pull_ip(line):
 	ipaddr = re.search("((?:[0-9]{1,3}\.){3}[0-9]{1,3})", line).group(1)
-	print("Banning " + ipaddr)
         FirewallBan.ban_ip(ipaddr)
 
 

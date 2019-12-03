@@ -17,19 +17,23 @@ import fileinput
 def ban_ip(ipaddr):
 	# That should be big enough for no duplicates, otherwise we need incremental rule numbers *lame*
 	rule_num = random.randint(20, 10001)
+        print("Banning IP: " + ipaddr + " RuleNum: " + str(rule_num))
 
 	with open("IPFW.sh", "a") as rulefile:
 		rulefile.write("ipfw -q add " + str(rule_num) + " deny tcp from " + ipaddr + " to me via $eth_if keep-state\n")
 
 	subprocess.call(['./IPFW.sh'])
 	# Timer uses Magic Number 20 for the ban time, this should be a vairable soon.
+        # Uncomment to use this code
 	#timer = threading.Timer(20.0, unban_ip, [rule_num])
 	#timer.start()
 
 def unban_ip(rule_num):
-	with fileinput.FileInput(IPFW.sh, inplace = True) as rulefile:
+	with fileinput.FileInput("IPFW.sh", inplace = True, backup = '.bak') as rulefile:
 		for line in rulefile:
 			if not re.search(rule_num, line):
 				print(line,end='')
+                print("Reverting " + str(rule_num))
+                subprocess.call(['./IPFW.sh'])
 
 
