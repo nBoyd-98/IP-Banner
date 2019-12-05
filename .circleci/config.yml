@@ -1,8 +1,11 @@
+
  version: 2
  jobs:
    build:
      docker:
+       - image: circleci/python.3.6.4
+         environment:
+           PIPENV_VENV_IN_PROJECT: true
      steps:
        - checkout
        - run: pipenv run python TestLogin.py test
-
