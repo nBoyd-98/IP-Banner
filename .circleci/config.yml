@@ -8,6 +8,5 @@
      steps:
        - checkout
        - run:
-         command: |
-           pipenv run python TestLogin.py test
+         command: pipenv run python TestLogin.py test
 
